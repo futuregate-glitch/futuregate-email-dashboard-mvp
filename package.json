@@ -1,0 +1,19 @@
+{
+  "name": "futuregate-email-dashboard-mvp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MVP dashboard: Outlook search via Zapier, view emails, summarize, response-time metrics.",
+  "main": "server/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "nanoid": "^5.0.7"
+  }
+}

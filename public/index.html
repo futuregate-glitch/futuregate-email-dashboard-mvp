@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Future Gate • Email Dashboard (MVP)</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">FG</div>
+        <div>
+          <div class="name">Future Gate</div>
+          <div class="sub">Email Dashboard • MVP</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="pill" id="healthPill">Checking…</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel left">
+        <h2>Search Outlook (via Zapier)</h2>
+        <form id="searchForm" class="form">
+          <label>
+            Keyword
+            <input id="keyword" placeholder="e.g., Siemens, QSTP, invoice, TRO…" minlength="2" required />
+          </label>
+
+          <div class="row">
+            <label>
+              Date from
+              <input id="dateFrom" type="date" />
+            </label>
+            <label>
+              Date to
+              <input id="dateTo" type="date" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label>
+              Max results
+              <input id="maxResults" type="number" value="50" min="1" max="200" />
+            </label>
+            <button class="btn primary" type="submit">Search</button>
+          </div>
+
+          <div class="hint">
+            This triggers Zapier → Outlook search, then Zapier sends results back to this app.
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="stack">
+          <h3>Recent Searches</h3>
+          <div id="queries" class="list"></div>
+        </div>
+      </section>
+
+      <section class="panel mid">
+        <div class="panelHead">
+          <h2>Threads</h2>
+          <div class="mini">
+            <input id="threadFilter" placeholder="Filter threads…" />
+            <button id="refreshBtn" class="btn">Refresh</button>
+          </div>
+        </div>
+        <div id="threads" class="threads"></div>
+      </section>
+
+      <section class="panel right">
+        <div class="panelHead">
+          <h2>Thread Details</h2>
+          <div class="mini">
+            <button id="summarizeBtn" class="btn primary" disabled>Summarize</button>
+          </div>
+        </div>
+
+        <div id="threadMeta" class="meta"></div>
+
+        <div class="cards">
+          <div class="card">
+            <div class="cardTitle">Summary</div>
+            <pre id="summaryBox" class="summary">(Select a thread)</pre>
+          </div>
+
+          <div class="card">
+            <div class="cardTitle">Response Metrics</div>
+            <div id="metricsBox" class="metrics">(Select a thread)</div>
+          </div>
+
+          <div class="card">
+            <div class="cardTitle">Messages</div>
+            <div id="messages" class="messages">(Select a thread)</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Tip: If nothing shows after Search, confirm your Zapier “POST back” step points to <code>/api/zapier/results</code> and the webhook secret matches.</span>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
