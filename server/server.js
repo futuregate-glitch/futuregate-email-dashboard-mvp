@@ -245,30 +245,46 @@ app.post("/api/threads/:id/summarize", async (req, res) => {
 });
 
 // Optional endpoint: Zapier can post the summary result back here
-app.post("/api/zapier/summary", (req, res) => {
+app.post("/api/zapier/results", (req, res) => {
   const secret = req.header("X-Webhook-Secret") || req.query.secret || "";
   if (INCOMING_WEBHOOK_SECRET && secret !== INCOMING_WEBHOOK_SECRET) {
     return res.status(401).json({ ok: false, error: "Unauthorized (bad webhook secret)." });
   }
-  const { threadId, queryId, summary, actionItems } = req.body || {};
-  if (!threadId || !summary) return res.status(400).json({ ok:false, error:"Expected { threadId, summary }" });
 
-  const saved = withDb((db) => {
-    const s = {
-      id: "s_" + nanoid(10),
-      threadId,
-      queryId: queryId || null,
-      summary: String(summary),
-      actionItems: Array.isArray(actionItems) ? actionItems : [],
-      createdAt: new Date().toISOString(),
-      source: "zapier-callback"
-    };
-    db.summaries.push(s);
-    return s;
+  let body = req.body;
+
+  // ✅ Handle: Zapier sends { payload: "{...json...}" }
+  if (body && typeof body === "object" && typeof body.payload === "string") {
+    try { body = JSON.parse(body.payload); } catch (e) {}
+  }
+
+  // ✅ Handle: Zapier sends raw JSON as a string
+  if (typeof body === "string") {
+    try { body = JSON.parse(body); } catch (e) {}
+  }
+
+  const { queryId, emails } = body || {};
+  if (!queryId || !Array.isArray(emails)) {
+    return res.status(400).json({ ok: false, error: "Invalid payload. Expected { queryId, emails: [] }" });
+  }
+
+  const result = withDb((db) => {
+    const q = db.queries.find(x => x.id === queryId);
+    if (!q) return { ok: false, error: "Unknown queryId" };
+
+    const { emailIdsCreated, threadIdsTouched } = upsertEmailsAndThreads(db, queryId, emails);
+
+    q.status = "complete";
+    q.updatedAt = new Date().toISOString();
+    q.receivedCount = (q.receivedCount || 0) + emails.length;
+    q.createdMessages = (q.createdMessages || 0) + emailIdsCreated.length;
+
+    return { ok: true, emailIdsCreated, threadIdsTouched };
   });
 
-  res.json({ ok:true, saved });
+  return res.json(result);
 });
+
 
 app.listen(PORT, () => {
   console.log(`MVP Email Dashboard running on ${APP_BASE_URL}`);
