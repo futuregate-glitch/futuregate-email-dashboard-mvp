@@ -316,15 +316,19 @@ app.post("/api/search", async (req, res) => {
   });
 
   // Send to Zapier
-  const payload = { queryId, keyword, dateFrom, dateTo, maxResults, callbackUrl };
+ const params = new URLSearchParams();
+params.set("queryId", queryId);
+params.set("keyword", keyword);
+params.set("dateFrom", dateFrom || "");
+params.set("dateTo", dateTo || "");
+params.set("maxResults", String(maxResults || 50));
+params.set("callbackUrl", callbackUrl);
 
-  try {
-    const r = await fetchFn(ZAPIER_SEARCH_HOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
+const r = await fetchFn(ZAPIER_SEARCH_HOOK_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: params.toString()
+});
     const text = await r.text().catch(() => "");
     if (!r.ok) {
       withDb((db) => {
